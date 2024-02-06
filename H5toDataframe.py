@@ -22,9 +22,9 @@ def read_hdf5(file_path):
         max_length = max(len(values) for values in data_dict.values())
         shorter_columns = {name: len(values) for name, values in data_dict.items() if len(values) < max_length}
         if shorter_columns:
-            print(f"Inconsistency in: {data_id}")
-            for name, length in shorter_columns.items():
-                print(f" - Column name:: {name}, Length: {length}")
+            # print(f"Inconsistency in: {data_id}")
+            # for name, length in shorter_columns.items():
+            #     print(f" - Column name:: {name}, Length: {length}")
             return None, attributes
 
         data_frame = pd.DataFrame(data_dict)
