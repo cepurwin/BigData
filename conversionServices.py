@@ -1,5 +1,7 @@
 from datetime import datetime as dt
 import pandas as pd
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def convert_to_datetime(timestamp):
     # Annahme: Timestamp ist entweder ein String oder ein Unix-Timestamp
@@ -43,7 +45,10 @@ def convert_for_influx(df):
 
     # Nur für timestamp durchlaufen
     for index, value in enumerate(df['timestamp']):
-        df.at[index, 'timestamp'] = convert_to_datetime(value)
+        try:
+            df.at[index, 'timestamp'] = convert_to_datetime(value)
+        except Exception as e:
+            print(e)
 
     return df
 
