@@ -59,6 +59,9 @@ def download_df_by_measurement(bucket, measurement):
         attrs['year'] = row[1]['year']
         break
 
+    #Spalte "_time" in "timestamp" umbenennen
+    df = df.rename(columns={"_time": "timestamp"})
+
     #Attribut-Spalten löschen
     df = df.drop(['_measurement', '_start', '_stop', 'table','result', 'instrument', 'cofiguration', 'year'], axis=1)
 
