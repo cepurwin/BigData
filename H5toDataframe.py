@@ -2,9 +2,8 @@ import os
 import pandas as pd
 import h5py
 import numpy as np
+import conversionServices as convServ
 def read_hdf5(file_path):
-    # import numpy as np
-
     """Read an HDF5 file into a Pandas DataFrame and return it along with attributes."""
     with h5py.File(file_path, 'r') as file:
         for keyname in file.keys():
@@ -35,14 +34,13 @@ def read_hdf5(file_path):
                     data_dict['velocity'][idx] = data_dict['distance'][idx] / ((data_dict['timestamp'][idx] - data_dict['timestamp'][0])/1000)
             except Exception as e:
                 print(e)
-            # print(data_dict['velocity'][0])
-            # print(data_dict['velocity'])
-            ## data_frame = pd.DataFrame(data_dict)
-            # print(data_frame)
-            ## return data_frame, attributes
 
-        data_frame = pd.DataFrame(data_dict)
-        return data_frame, attributes
+        dataframe = pd.DataFrame(data_dict)
+
+        # Data preprocessing
+        dataframe = convServ.convert_for_influx(dataframe)
+
+        return dataframe, attributes
 
 def convertAllH5Files():
     all_dataframes = {}

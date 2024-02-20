@@ -1,34 +1,25 @@
-from datetime import datetime
+from datetime import datetime as dt
 import pandas as pd
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
-def get_datetime_from_unix_timestamp(ts):
-    dt = datetime.fromtimestamp(ts, tz=None)
-    return dt
-
-
-def is_valid_unix_timestamp(ts):
-    if get_datetime_from_unix_timestamp(ts):
-        return True
-    else:
-        return False
-
-def convert_timestamp_iso_to_unix(timestamp):
-    timestamp_str = str(timestamp)
-    if 'T' in timestamp_str:
-        timestamp_str_padded = timestamp_str[:-1] + "0" + timestamp_str[-1] if timestamp_str[-2] == ':' else timestamp_str
-        timestamp_dt = datetime.strptime(timestamp_str_padded, '%Y-%m-%dT%H:%M:%S')
-        return timestamp_dt.timestamp()
-    else:
-        return timestamp
-
-def convert_bytestring_to_unicode_cell(cell_value):
-    decoded_str = cell_value.decode('utf-8')
+def convert_to_datetime(timestamp):
+    # Annahme: Timestamp ist entweder ein String oder ein Unix-Timestamp
+    # Annahme: Bytestrings wurden bereits in Unicode umgewandelt
+    format_iso = "%Y-%m-%dT%H:%M:%S"
     try:
-        new_value = float(decoded_str)
-    except ValueError:
-        new_value = cell_value.decode('utf-8')
-    return new_value
+        val = float(timestamp)
+    except Exception as e:
+        val = timestamp
+
+    if isinstance(val, str):
+        return dt.strptime(val, format_iso)
+    elif isinstance(val, float):
+        return dt.fromtimestamp(val)
+    else:
+        # Bei Fehler wird Jahr 2100 zurückgegeben
+        # Kein Error-Handling, da dies bei der Ausreißer-Erkennung auffallen sollte
+        return dt.strptime("2100-01-01T00:00:00", format_iso)
 
 def getYearFromDf(dataframe):
     if not None:
@@ -47,5 +38,23 @@ def getYearFromDf(dataframe):
 
         return year
 
-def dataframe_column_average(df, column_name):
-    return df[column_name].mean()
+def convert_for_influx(df):
+    # Für alle Spalten durchlaufen
+    for column in df.keys().tolist():
+        df[column] = df[column].apply(lambda x: x.decode('utf-8') if isinstance(x, bytes) else x)
+
+    # Nur für timestamp durchlaufen
+    for index, value in enumerate(df['timestamp']):
+        try:
+            df.at[index, 'timestamp'] = convert_to_datetime(value)
+        except Exception as e:
+            print(e)
+
+    return df
+
+def calculate_mean_for_column(df, column):
+    try:
+        result = df[column].toList().mean()
+        return result
+    except Exception as e:
+        return None
