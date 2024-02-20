@@ -3,8 +3,9 @@ import pandas as pd
 
 def removeOutliersTurkeysMethod(dataframes):
     for name, (df, attrs) in dataframes.items():
-        # Wir gehen davon aus, dass 'timestamp' der Name der Spalte ist, die geprüft werden soll
-        df['timestamp'] = pd.to_numeric(df['timestamp'], errors='coerce')
+        # Konvertiere die Timestamps in Unix-Format
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format="%Y-%m-%dT%H:%M:%S").astype(int) // 10 ** 9
+
         Q1 = df['timestamp'].quantile(0.25)
         Q3 = df['timestamp'].quantile(0.75)
         IQR = Q3 - Q1
@@ -29,4 +30,9 @@ def removeOutliersTurkeysMethod(dataframes):
                 df.at[index, 'timestamp'] = new_value
             else:
                 print(f" - Kann Ausreißer an Index {index} nicht ersetzen, keine Nachbarn.")
+
+        # Konvertiere die Timestamps wieder in das gewünschte ISO-Format
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s').dt.strftime("%Y-%m-%dT%H:%M:%S")
+
     print("Bearbeitung abgeschlossen.\n")
+    return dataframes
