@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 def filterEasterEggs(dataframes):
     for name, (df, attrs) in dataframes.items():
@@ -22,3 +21,20 @@ def convert_all_strings_to_floats(dataframes_dict):
                     print(f"Non-numeric values in '{col}':\n{non_numeric_values}")
 
     return dataframes_dict
+
+
+def replace_nan_with_avg_of_neighbors(dataframes, attribute):
+    for name, (df, attrs) in dataframes.items():
+        print(f"Bearbeite {name}...")
+
+        # Vorwärts füllen (nutzt nächstfolgenden gültigen Wert)
+        forward_filled = df[attribute].fillna(method='ffill')
+
+        # Rückwärts füllen (nutzt vorherigen gültigen Wert)
+        backward_filled = df[attribute].fillna(method='bfill')
+
+        # Durchschnitt zwischen vorwärts und rückwärts gefüllten Werten nehmen
+        df[attribute] = (forward_filled + backward_filled) / 2
+
+    print("Bearbeitung abgeschlossen.\n")
+    return dataframes
