@@ -1,19 +1,20 @@
 import pandas as pd
 
 
-def removeOutliersTurkeysMethod(dataframes):
+def removeOutliersTurkeysMethod_withMean(dataframes, attribute):
     for name, (df, attrs) in dataframes.items():
         # Konvertiere die Timestamps in Unix-Format
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format="%Y-%m-%dT%H:%M:%S").astype(int) // 10 ** 9
+        if attribute == 'timestamp':
+            df['timestamp'] = pd.to_datetime(df['timestamp'], format="%Y-%m-%dT%H:%M:%S").astype('int64') // 10 ** 9
 
-        Q1 = df['timestamp'].quantile(0.25)
-        Q3 = df['timestamp'].quantile(0.75)
+        Q1 = df[attribute].quantile(0.25)
+        Q3 = df[attribute].quantile(0.75)
         IQR = Q3 - Q1
         lower_bound = Q1 - 1.5 * IQR
         upper_bound = Q3 + 1.5 * IQR
 
         # Ermitteln der Indizes der Ausreißer
-        outliers = df[(df['timestamp'] < lower_bound) | (df['timestamp'] > upper_bound)]
+        outliers = df[(df[attribute] < lower_bound) | (df[attribute] > upper_bound)]
 
         print(f"Ausreißer in {name}:\n")
         for index in outliers.index:
@@ -25,14 +26,61 @@ def removeOutliersTurkeysMethod(dataframes):
 
             # Berechnen des neuen Werts nur, wenn es gültige Nachbarn gibt
             if valid_neighbors:
-                new_value = df.loc[valid_neighbors, 'timestamp'].mean()
-                print(f" - Ersetze Ausreißer an Index {index} ({df.loc[index, 'timestamp']}) mit {new_value}")
-                df.at[index, 'timestamp'] = new_value
+                new_value = df.loc[valid_neighbors, attribute].mean()
+                print(f" - Ersetze Ausreißer an Index {index} ({df.loc[index, attribute]}) mit {new_value}")
+                df.at[index, attribute] = new_value
             else:
                 print(f" - Kann Ausreißer an Index {index} nicht ersetzen, keine Nachbarn.")
 
         # Konvertiere die Timestamps wieder in das gewünschte ISO-Format
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s').dt.strftime("%Y-%m-%dT%H:%M:%S")
+        if attribute == 'timestamp':
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s').dt.strftime("%Y-%m-%dT%H:%M:%S")
+
+    print("Bearbeitung abgeschlossen.\n")
+    return dataframes
+
+
+def removeOutliersTurkeysMethod_withForwardAndBackFill(dataframes, attribute):
+    for name, (df, attrs) in dataframes.items():
+        Q1 = df[attribute].quantile(0.25)
+        Q3 = df[attribute].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Ermitteln der Indizes der Ausreißer
+        outliers = df[(df[attribute] < lower_bound) | (df[attribute] > upper_bound)]
+
+        print(f"Ausreißer in {name}:\n")
+        for index in outliers.index:
+            # Initialisiere die Indizes der neuen Werte
+            forward_index = index + 1
+            backward_index = index - 1
+
+            # Suche den nächsten gültigen Wert in beide Richtungen
+            while forward_index < len(df) and not df.index.isin([forward_index]).any():
+                forward_index += 1
+
+            while backward_index >= 0 and not df.index.isin([backward_index]).any():
+                backward_index -= 1
+
+            # Überprüfe, ob der Index gültig ist
+            if 0 <= backward_index < len(df) and 0 <= forward_index < len(df):
+                # Bestimme den nächstgelegenen gültigen Wert
+                forward_distance = forward_index - index
+                backward_distance = index - backward_index
+
+                if forward_distance <= backward_distance:
+                    new_index = forward_index
+                else:
+                    new_index = backward_index
+
+                # Neuen Wert setzen
+                new_value = df.loc[new_index, attribute]
+                print(f" - Ersetze Ausreißer an Index {index} ({df.loc[index, attribute]}) mit {new_value}")
+                df.at[index, attribute] = new_value
+            else:
+                print(f" - Index {index} nicht gültig, kann Ausreißer nicht ersetzen.")
 
     print("Bearbeitung abgeschlossen.\n")
     return dataframes
