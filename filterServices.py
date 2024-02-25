@@ -1,5 +1,3 @@
-import pandas as pd
-
 def filterEasterEggs(dataframes):
     for name, (df, attrs) in dataframes.items():
         condition = df.map(lambda cell: isinstance(cell, bytes) and cell == b'Easteregg :)' or isinstance(cell, str) and cell == 'Easteregg :)')
