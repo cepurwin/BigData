@@ -34,7 +34,14 @@ def replace_nan_with_avg_of_neighbors(dataframes, attribute):
         backward_filled = df[attribute].fillna(method='bfill')
 
         # Durchschnitt zwischen vorwärts und rückwärts gefüllten Werten nehmen
-        df[attribute] = (forward_filled + backward_filled) / 2
+        averaged = (forward_filled + backward_filled) / 2
+
+        # Behandlung von Fällen, bei denen entweder am Anfang oder am Ende NaN-Werte stehen.
+        # Wenn averaged noch NaN-Werte enthält, bedeutet dies, dass sowohl forward als auch backward fill nicht funktioniert haben.
+        # In diesem Fall wird NaN durch den gültigen Wert von forward_filled oder backward_filled ersetzt.
+        # Da beide in jedem Fall den gleichen Wert haben sollten (wenn einer von ihnen NaN ist, ist der andere nicht),
+        # kann jeder von ihnen verwendet werden, um die verbleibende NaN zu ersetzen.
+        df[attribute] = averaged.fillna(forward_filled)
 
     print("Bearbeitung abgeschlossen.\n")
     return dataframes
