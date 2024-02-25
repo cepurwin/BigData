@@ -58,3 +58,17 @@ def calculate_mean_for_column(df, column):
         return result
     except Exception as e:
         return None
+
+def convert_all_strings_to_floats(dataframes_dict):
+    for name, (df, attrs) in dataframes_dict.items():
+        # Überprüfe 'magnetization' und 'wall_thickness' auf Strings und konvertiere sie zu Floats
+        for col in ['magnetization', 'wall_thickness']:
+            if col in df.columns:
+                try:
+                    df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)
+                except ValueError as ve:
+                    print(f"Error converting {col} to float in DataFrame '{name}': {ve}")
+                    non_numeric_values = df[df[col].apply(lambda x: not str(x).replace('.', '', 1).isdigit())][col]
+                    print(f"Non-numeric values in '{col}':\n{non_numeric_values}")
+
+    return dataframes_dict
