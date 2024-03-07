@@ -1,6 +1,10 @@
 import plotly.graph_objects as go
 from collections import defaultdict
 import plotly.io as pio
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 def displayYearDiagram(show_percentage, dataframes, attribute_choice):
     """
@@ -66,3 +70,55 @@ def displayYearDiagram(show_percentage, dataframes, attribute_choice):
 
     # Diagramm anzeigen
     fig.show()
+
+def displayAttrCombinationDiagram(dataframes):
+    attrs_list = []
+    for name, (df, attrs) in dataframes.items():
+        attrs_list.append(attrs)
+
+    attrs_df = pd.DataFrame(attrs_list)
+    attrs_count = attrs_df.groupby(['configuration', 'instrument']).size().reset_index(name='Counts')
+    heatmap_data = attrs_count.pivot(index='configuration', columns='instrument', values='Counts')
+
+    # Die Heatmap erstellen
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(heatmap_data, annot=True, cmap='Oranges', fmt="d")
+
+    # Anzeigen der Heatmap
+    plt.title('Häufigkeit der Konfigurations- und Instrumentenkombinationen')
+    plt.ylabel('Konfiguration')
+    plt.xlabel('Instrument')
+    plt.show()
+
+def displayFrequencies(dataframes):
+
+    attrs_list = []
+    for name, (df, attrs) in dataframes.items():
+        attrs_list.append(attrs)
+
+    attrs_df = pd.DataFrame(attrs_list)
+
+    # Berechnen der Häufigkeiten
+    config_frequencies = attrs_df['configuration'].value_counts()
+    instrument_frequencies = attrs_df['instrument'].value_counts()
+
+    # Erstellen des Säulendiagramms für Konfigurationen
+    plt.figure(figsize=(10, 6))
+    plt.gca().set_facecolor('white')  # Hintergrundfarbe auf Weiß setzen
+    config_frequencies.plot(kind='bar')
+    plt.title('Häufigkeiten der Konfigurationen')
+    plt.xlabel('Konfiguration')
+    plt.ylabel('Häufigkeit')
+    plt.xticks(rotation=45)
+    plt.tight_layout()  # Verbessert die Darstellung bei längeren Beschriftungen
+    plt.show()
+
+    # Erstellen des Säulendiagramms für Instrumente
+    plt.figure(figsize=(10, 6))
+    instrument_frequencies.plot(kind='bar', color='orange')
+    plt.title('Häufigkeiten der Instrumente')
+    plt.xlabel('Instrument')
+    plt.ylabel('Häufigkeit')
+    plt.xticks(rotation=45)
+    plt.tight_layout()  # Verbessert die Darstellung bei längeren Beschriftungen
+    plt.show()
