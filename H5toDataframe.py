@@ -3,6 +3,7 @@ import pandas as pd
 import h5py
 import numpy as np
 import conversionServices as convServ
+
 def read_hdf5(file_path):
     """Read an HDF5 file into a Pandas DataFrame and return it along with attributes."""
     with h5py.File(file_path, 'r') as file:
@@ -39,6 +40,9 @@ def read_hdf5(file_path):
 
         # Data preprocessing
         dataframe = convServ.convert_for_influx(dataframe)
+
+        # Add year to attributes
+        attributes['year'] = convServ.getYearFromDf(dataframe)
 
         return dataframe, attributes
 
