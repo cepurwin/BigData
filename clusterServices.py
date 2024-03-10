@@ -9,7 +9,7 @@ def clusterWallThicknessAndCalculateMean(dataframes):
     for name, (df, attrs) in dataframes.items():
         # timestamp von timestamp zu UNIX
         df['timestamp'] = pd.to_datetime(df['timestamp'], format="%Y-%m-%dT%H:%M:%S").astype('int64') // 10 ** 9
-        print(f"Clusterverarbeitung von {name}...")
+        print(f"Wall_thickness Clusterverarbeitung von {name}...")
         # Annahme: 'timestamp' und 'wall_thickness' sind die benötigten Spalten
         filteredDf = pd.DataFrame({
             'timestamp_unix': df['timestamp'],
@@ -72,5 +72,5 @@ def clusterWallThicknessAndCalculateMean(dataframes):
         # plt.xlabel('Unix-Timestamp')
         # plt.ylabel('Wall Thickness (aktualisiert)')
         # plt.show()
-    print("-----Cluster Verarbeitung abgeschlossen-----")
+    print("-----Wall-thickness Cluster Verarbeitung abgeschlossen-----")
     return dataframes
