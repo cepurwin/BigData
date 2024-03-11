@@ -1,11 +1,7 @@
 # constants for overall API configuration
-org = 'H493f0c3e5bf84239'
-token = "giJmgHGcBaEt8LvH1kZbfpwrNU3_eYDg32MXqbfkZNyuJHxfyOHTFAyYBsOs7M2s-WKRneuGu849FTT3CNdCHg=="
-url="https://westeurope-1.azure.cloud2.influxdata.com/"
-
-# constants dict for specific buckets
-bucket_code_test5 = "8bfb0bbb9e31d01a"
-bucket_code_test6 = "43ecbfaf3070c072"
+org = '6102c39593af1a7a'
+token = "Idg_OEW4AAssgh_YUaQMETzVTbafiUPT-lurRjx2Qf2reTO8mHU_xJYSi_3vOGLSMAjbuEfuv4FN-4OSrpBY2w=="
+url="https://us-central1-1.gcp.cloud2.influxdata.com"
 
 # functions for easier access to the constants
 def get_client():
