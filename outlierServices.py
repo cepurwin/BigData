@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def removeOutliersTurkeysMethod_withMean(dataframes, attribute):
+def removeOutliersTurkeysMethod_withMean(dataframes, attribute): #Wird eigentlich nur beim timestamp verwendet
     for name, (df, attrs) in dataframes.items():
         # Konvertiere die Timestamps in Unix-Format
         if attribute == 'timestamp':
@@ -16,21 +16,22 @@ def removeOutliersTurkeysMethod_withMean(dataframes, attribute):
         # Ermitteln der Indizes der Ausreißer
         outliers = df[(df[attribute] < lower_bound) | (df[attribute] > upper_bound)]
 
+        # Berechnen des durchschnittlichen Abstands aller Nicht-Ausreißer-Werte
+        non_outliers = df[~df.index.isin(outliers.index)]
+        if not non_outliers.empty:
+            avg_distance = non_outliers[attribute].diff().abs().mean()
+        else:
+            avg_distance = 0
+
         print(f"Ausreißer in {name}:\n")
         for index in outliers.index:
-            # Für jeden Ausreißer den Mittelwert der umliegenden Werte berechnen (wenn möglich)
-            neighbors = [index - 1, index + 1]
-
-            # Nur gültige Nachbarindizes berücksichtigen
-            valid_neighbors = [n for n in neighbors if n in df.index]
-
-            # Berechnen des neuen Werts nur, wenn es gültige Nachbarn gibt
-            if valid_neighbors:
-                new_value = df.loc[valid_neighbors, attribute].mean()
-                print(f" - Ersetze Ausreißer an Index {index} ({df.loc[index, attribute]}) mit {new_value}")
+            # Bestimme den bestmöglichen Wert für den Ausreißer basierend auf dem vorherigen Wert (wenn verfügbar)
+            if index - 1 in df.index:
+                new_value = df.at[index - 1, attribute] + avg_distance
+                print(f" - Ersetze Ausreißer an Index {index} ({df.at[index, attribute]}) mit {new_value}")
                 df.at[index, attribute] = new_value
             else:
-                print(f" - Kann Ausreißer an Index {index} nicht ersetzen, keine Nachbarn.")
+                print(f" - Kann Ausreißer an Index {index} nicht ersetzen, kein Vorgängerwert verfügbar.")
 
         # Konvertiere die Timestamps wieder in das gewünschte ISO-Format
         if attribute == 'timestamp':
