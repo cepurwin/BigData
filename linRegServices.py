@@ -19,9 +19,12 @@ def clean_magnetization_with_linReg(dataframes):
         # Vorhersage der Magnetisierungswerte
         Y_pred = lin_reg.predict(X)
 
-        # Subtraktion des Trends von den ursprünglichen Daten
-        df['magnetization'] = df['magnetization'] - Y_pred.flatten()
-        # Umwandeln timestamp in datetime
+        # Berechnung der Trends ohne den Offset zu entfernen
+        Y_trend = (Y_pred - lin_reg.intercept_).flatten()  # Entferne den Achsenabschnitt aus der Vorhersage
+
+        # Korrigiere die ursprünglichen Daten, indem nur der Trend subtrahiert wird
+        df['magnetization'] = df['magnetization'] - Y_trend
+        # Umwandeln des Timestamps zurück in datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s').dt.strftime("%Y-%m-%dT%H:%M:%S")
     print("----- Lineare Regressionsberechnung für magnetization fertig -----")
     return dataframes
