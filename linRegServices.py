@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import numpy as np
 
 def clean_magnetization_with_linReg(dataframes):
     for name, (df, attrs) in dataframes.items():
@@ -16,7 +17,7 @@ def clean_magnetization_with_linReg(dataframes):
         residuale = Y - lin_reg.predict(X)
 
         # Anpassung des Mittelwerts der Residuen, um die ursprüngliche Basislinie zu erhalten
-        adjusted_residuale = residuale + Y.mean()
+        adjusted_residuale = residuale + np.mean(Y[:100])
 
         df['magnetization'] = adjusted_residuale
 
