@@ -63,7 +63,7 @@ def calculate_mean_for_column(df, column):
 def convert_all_strings_to_floats(dataframes_dict):
     for name, (df, attrs) in dataframes_dict.items():
         # Überprüfe 'magnetization' und 'wall_thickness' auf Strings und konvertiere sie zu Floats
-        for col in ['magnetization', 'wall_thickness']:
+        for col in ['magnetization', 'wall_thickness', 'velocity']:
             if col in df.columns:
                 try:
                     df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)
